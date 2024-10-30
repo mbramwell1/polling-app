@@ -11,5 +11,10 @@ services:
     image: 'redis:latest'
     ports:
       - 6379:6379
-
-
+  polling:
+    depends_on:
+      - mongodb
+      - redis
+    image: 'mgbramwell/polling:0-SNAPSHOT'
+    ports:
+      - 8080:8080

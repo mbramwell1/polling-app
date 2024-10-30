@@ -8,7 +8,7 @@
 		<version>3.3.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>co.uk.mgbramwell</groupId>
+	<groupId>uk.co.mgbramwell</groupId>
 	<artifactId>polling</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>polling</name>
@@ -151,22 +151,7 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
-					<image>
-						<builder>paketobuildpacks/builder-jammy-buildpackless-tiny</builder><!--required for AArch64/M1 support -->
-						<buildpacks>
-							<buildpack>paketobuildpacks/oracle</buildpack>
-							<buildpack>paketobuildpacks/java-native-image</buildpack>
-						</buildpacks>
-						<name>mgbramwell/polling:${project.version}</name>
-					</image>
 				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>repackage</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>

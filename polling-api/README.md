@@ -1,13 +1,14 @@
-# mbramwell-dizplai-test
+# mbramwell-dizplai-test API
 
 This is the API submission for the Technical Test for Martin Bramwell.
 The submission uses the Spring Boot framework, along with RestAssured and TestContainers for testing.
 
-Some assumptions have been made:
+Some assumptions/compromises have been made:
 1. A Poll is active until a new Poll is created
 2. Creating a new Poll deactivates the current Active Poll
 3. Votes are only allowed on a Poll whilst the Poll is active
 4. A user cannot vote on the same Poll twice, or change their vote
+5. For simplicity, I am using the 'admin' database on Mongo along with the root user. This would not be advisable for a production system.
 
 ## Running the application via the Maven Wrapper
 
