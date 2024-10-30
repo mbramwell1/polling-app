@@ -22,7 +22,7 @@ public class Poll {
     @Id
     private String id;
     @NotNull
-    @Size(min = 20, max = 60)
+    @Size(min = 10, max = 40)
     private String name;
     private boolean isActive;
     @NotNull
