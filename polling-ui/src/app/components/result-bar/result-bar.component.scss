@@ -1,0 +1,58 @@
+.pre-vote:hover {
+    background-color: rgba(185, 120, 247, 0.4);
+    cursor: pointer;
+}
+
+.loading-spinner {
+    margin: auto;
+}
+
+.result-bar {
+    border: 1px solid white;
+    background-color: rgba(185, 120, 247, 0.2);
+    width: 100%;
+    display: -webkit-flex;
+    display: flex;
+    height: 5em;
+    z-index: 0;
+    position: relative;
+    border-radius: .5em;
+    margin-bottom: .5em;
+
+    .progress-bar {
+        -webkit-flex: 1;
+        flex: 1;
+        z-index: 1;
+        color: white;
+        background-color: rgba(185, 120, 247, 0.8);
+    }
+
+    .text-container {
+        z-index: 10;
+        position: absolute;
+        left: 0;
+        top: .9em;
+        right: 0;
+        bottom: 0;
+        text-align: center;
+        color: white;
+    }
+}
+
+.selected {
+    background-color: rgba(185, 120, 247, 0.6) !important;
+
+    .progress-bar {
+        background-color: rgba(111, 206, 238, 0.8) !important;
+    }
+
+    .text-container {
+        font-weight: bold;
+    }
+}
+
+.pre-vote {
+    .text-container {
+        top: 1.7em;
+    }
+}

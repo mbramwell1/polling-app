@@ -1,0 +1,4 @@
+<div class="votes-container">
+    <a class="back-link" [routerLink]="getBackLink()">Back</a>
+    <app-vote-box *ngFor="let vote of votes.slice().reverse()" [vote]="vote"></app-vote-box>
+</div>

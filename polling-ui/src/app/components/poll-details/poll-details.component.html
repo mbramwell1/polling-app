@@ -1,0 +1,28 @@
+<div class="details-container">
+    <div *ngIf="poll.id !== undefined">
+        <div class="details-component title-container">
+            {{poll.name}}
+        </div>
+        <div>
+            <div class="details-component  subtitle-container">
+                <div>
+                    {{getVotesSum()}} Votes -
+                    <span *ngIf="votePlaced === null">
+                        Cast your vote now!
+                    </span> 
+                    <span *ngIf="votePlaced !== null">
+                        Thanks for your Response.
+                    </span>
+                </div>
+            </div>
+
+            <app-result-bar *ngFor="let option of options" [option]="option" [pollActive]="poll.active"
+                [votePlaced]="votePlaced" [votePercentage]="calculatePercentage(option)" (voteClicked)="vote($event)"></app-result-bar>
+
+            <a class="votes-link" *ngIf="votePlaced !== null" [routerLink]="getVotesLink()">See All Votes</a>
+        </div>
+    </div>
+    <div *ngIf="poll.id === undefined">
+        <mat-spinner class="loading-spinner"></mat-spinner>
+    </div>
+</div>

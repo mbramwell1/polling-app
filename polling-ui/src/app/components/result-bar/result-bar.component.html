@@ -1,0 +1,14 @@
+<div class="result-bar" (click)="vote()"
+    [ngClass]="{'selected': votePlaced === option, 'pre-vote' : votePlaced === null && pollActive}">
+    <div *ngIf="votePlaced !== null" class="progress-bar"
+        [ngStyle]="{'width': votePercentage + '%', 'max-width': votePercentage + '%', 'min-width': votePercentage + '%'}">
+    </div>
+    <div class="text-container">
+        <div>
+            {{option}}
+        </div>
+        <div *ngIf="votePlaced !== null">
+            {{votePercentage + '%'}}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,43 @@
+.details-container {
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: .5em;
+
+    .details-component {
+        text-align: center;
+        margin-bottom: .5em;
+    }
+
+    .title-container {
+        font-size: 2em;
+        color: white;
+    }
+
+    .subtitle-container {
+        font-size: 1em;
+        color: white;
+        margin-bottom: 2em;
+    }
+
+    .options-container {
+        display: flex;
+        flex-direction: row;
+        gap: .5em;
+
+        .option-button {
+            line-height: normal;
+        }
+    }
+
+    .votes-link {
+        color: white;
+        margin: 0 auto;
+        width: fit-content;
+        display: block;
+    }
+
+    .loading-spinner {
+        margin: auto;
+    }
+}
