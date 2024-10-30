@@ -13,9 +13,9 @@ public class WebSocketMessagePublisher {
 
     private final SimpMessageSendingOperations messagingTemplate;
 
-    public void handleVoteMessage(String pollId, String oldChoice) {
+    public void handleVoteMessage(String pollId, String choice) {
         WebSocketMessage webSocketMessage =
-                WebSocketMessage.builder().pollId(pollId).choice(oldChoice).build();
+                WebSocketMessage.builder().pollId(pollId).choice(choice).build();
         messagingTemplate.convertAndSend("/topic/poll/" + pollId, webSocketMessage);
     }
 
