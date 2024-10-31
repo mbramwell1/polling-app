@@ -21,8 +21,9 @@ public class Application {
                 registry.addMapping("/**")
                         .allowedOrigins("http://localhost:4200")
                         .allowCredentials(true)
-                        .allowedMethods("*")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE")
                         .allowedHeaders("*")
+                        .exposedHeaders("pages")
                         .maxAge(3600);
             }
         };

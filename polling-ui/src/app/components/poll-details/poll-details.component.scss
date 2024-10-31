@@ -1,5 +1,5 @@
 .details-container {
-    max-width: 500px;
+    max-width: 600px;
     margin-left: auto;
     margin-right: auto;
     margin-top: .5em;
@@ -12,12 +12,20 @@
     .title-container {
         font-size: 2em;
         color: white;
+        text-wrap: pretty;
+        line-height: normal;
     }
 
     .subtitle-container {
         font-size: 1em;
         color: white;
         margin-bottom: 2em;
+
+        .reload-button {
+            border-color: white;
+            color: white;
+            margin-top: .5em;
+        }
     }
 
     .options-container {

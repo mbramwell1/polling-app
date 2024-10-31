@@ -1,5 +1,16 @@
 package uk.co.mgbramwell.polling.service;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import uk.co.mgbramwell.polling.Application;
 import uk.co.mgbramwell.polling.data.PollRepository;
 import uk.co.mgbramwell.polling.data.VoteRepository;
@@ -9,19 +20,7 @@ import uk.co.mgbramwell.polling.exception.UnknownOptionException;
 import uk.co.mgbramwell.polling.exception.UnkownPollException;
 import uk.co.mgbramwell.polling.model.Poll;
 import uk.co.mgbramwell.polling.model.Vote;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
-import uk.co.mgbramwell.polling.service.VoteService;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -121,20 +120,39 @@ public class VoteServiceTest {
                 Vote.builder().sessionId(UUID.randomUUID().toString()).pollId(POLL_1.getId()).choice("Fernando Alonso")
                         .build());
 
-        List<Vote> votes = voteService.getVotesByPollId(POLL_1.getId());
-        assertThat(votes.size(), equalTo(3));
+        Page<Vote> page = voteService.getVotesByPollId(POLL_1.getId(), 0, 3);
+        assertThat(page.getContent().size(), equalTo(3));
+        assertThat(page.getTotalPages(), equalTo(1));
+    }
+
+    @Test
+    public void getVotesForPollIdReturnsPagedCorrectly() throws UnkownPollException {
+        voteRepository.save(
+                Vote.builder().sessionId(UUID.randomUUID().toString()).pollId(POLL_1.getId()).choice("Lance Stroll")
+                        .build());
+        voteRepository.save(
+                Vote.builder().sessionId(UUID.randomUUID().toString()).pollId(POLL_1.getId()).choice("Lewis Hamilton")
+                        .build());
+        voteRepository.save(
+                Vote.builder().sessionId(UUID.randomUUID().toString()).pollId(POLL_1.getId()).choice("Fernando Alonso")
+                        .build());
+
+        Page<Vote> page = voteService.getVotesByPollId(POLL_1.getId(), 0, 1);
+        assertThat(page.getContent().size(), equalTo(1));
+        assertThat(page.getTotalPages(), equalTo(3));
     }
 
     @Test
     public void getVotesForInvalidPollThrowsException() {
         POLL_1.setActive(false);
         POLL_1 = pollRepository.save(POLL_1);
-        assertThrows(UnkownPollException.class, () -> voteService.getVotesByPollId("NOTAVALIDID"));
+        assertThrows(UnkownPollException.class, () -> voteService.getVotesByPollId("NOTAVALIDID", 0, 1));
     }
 
     @Test
     public void getVoteBySessionReturnsCorrectly() throws NoVoteForSessionException, UnkownPollException, UnknownOptionException, PollInactiveException {
-        voteRepository.save(Vote.builder().sessionId(SESSION_UUID).pollId(POLL_1.getId()).choice("Fernando Alonso").build());
+        voteRepository.save(
+                Vote.builder().sessionId(SESSION_UUID).pollId(POLL_1.getId()).choice("Fernando Alonso").build());
 
         Vote vote = voteService.getVoteBySession(POLL_1.getId(), SESSION_UUID);
         assertThat(vote.getId(), is(notNullValue()));
@@ -143,28 +161,30 @@ public class VoteServiceTest {
 
     @Test
     public void getVoteBySessionIdNonExistingThrowsException() throws UnkownPollException, UnknownOptionException, PollInactiveException {
-        voteRepository.save(Vote.builder().sessionId(SESSION_UUID).pollId(POLL_1.getId()).choice("Fernando Alonso").build());
+        voteRepository.save(
+                Vote.builder().sessionId(SESSION_UUID).pollId(POLL_1.getId()).choice("Fernando Alonso").build());
         assertThrows(NoVoteForSessionException.class,
                 () -> voteService.getVoteBySession(POLL_1.getId(), "NOTASESSIONID"));
     }
 
     @Test
     public void deleteByPollIdDeletesCorrectly() throws UnkownPollException {
-        voteRepository.save(Vote.builder().sessionId(SESSION_UUID).pollId(POLL_1.getId()).choice("Fernando Alonso").build());
+        voteRepository.save(
+                Vote.builder().sessionId(SESSION_UUID).pollId(POLL_1.getId()).choice("Fernando Alonso").build());
         voteRepository.save(Vote.builder().sessionId(SESSION_UUID).pollId(POLL_2.getId()).choice("Fulham").build());
 
-        List<Vote> poll1Votes = voteService.getVotesByPollId(POLL_1.getId());
-        assertThat(poll1Votes.size(), equalTo(1));
+        Page<Vote> poll1Votes = voteService.getVotesByPollId(POLL_1.getId(), 0, 1);
+        assertThat(poll1Votes.getContent().size(), equalTo(1));
 
-        List<Vote> poll2Votes = voteService.getVotesByPollId(POLL_2.getId());
-        assertThat(poll2Votes.size(), equalTo(1));
+        Page<Vote> poll2Votes = voteService.getVotesByPollId(POLL_2.getId(), 0, 1);
+        assertThat(poll2Votes.getContent().size(), equalTo(1));
 
         voteService.deleteByPollId(POLL_1.getId());
 
-        poll1Votes = voteService.getVotesByPollId(POLL_1.getId());
-        assertThat(poll1Votes.size(), equalTo(0));
+        poll1Votes = voteService.getVotesByPollId(POLL_1.getId(), 0, 1);
+        assertThat(poll1Votes.getContent().size(), equalTo(0));
 
-        poll2Votes = voteService.getVotesByPollId(POLL_2.getId());
-        assertThat(poll2Votes.size(), equalTo(1));
+        poll2Votes = voteService.getVotesByPollId(POLL_2.getId(), 0, 1);
+        assertThat(poll2Votes.getContent().size(), equalTo(1));
     }
 }

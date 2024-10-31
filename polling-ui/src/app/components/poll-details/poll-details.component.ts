@@ -3,7 +3,6 @@ import { PollService } from '../../service/poll.service';
 import { WebsocketService } from '../../service/websocket.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Poll } from '../../model/poll';
-import { Vote } from '../../model/vote';
 import { WebSocketMessage } from '../../model/websocket-message';
 
 @Component({
@@ -16,7 +15,6 @@ export class PollDetailsComponent {
   routePollId: string | null = null;
 
   options: string[] = [];
-  votePlaced: string | null = null;
 
   constructor(private route: ActivatedRoute, private pollService: PollService, private websocketService: WebsocketService) {
     this.routePollId = this.route.snapshot.paramMap.get('id');
@@ -29,50 +27,54 @@ export class PollDetailsComponent {
 
   ngOnInit(): void {
     this.websocketService.messageReceived.subscribe((websocketMessage: WebSocketMessage) => {
-      let votes: number | undefined = this.poll.options.get(websocketMessage.choice);
+      if (websocketMessage.message === 'newvote' && this.poll.active) {
+        let votes: number | undefined = this.poll.options.get(websocketMessage.choice);
 
-      let newVotes;
-      if (votes !== undefined) {
-        newVotes = votes + 1;
-        this.poll.options.set(websocketMessage.choice, newVotes);
-      } else {
-        console.log("Invalid Vote received for Poll - " + JSON.stringify(websocketMessage));
+        let newVotes;
+        if (votes !== undefined) {
+          newVotes = votes + 1;
+          this.poll.options.set(websocketMessage.choice, newVotes);
+        } else {
+          console.log("Invalid Vote received for Poll - " + JSON.stringify(websocketMessage));
+        }
+      } else if (websocketMessage.message === 'newpoll' && this.poll.active) {
+        console.log('Poll Closed');
+        this.poll.active = false;
       }
     });
   }
 
   private setPoll(poll: Poll): void {
     this.poll = new Poll(poll);
-    this.votePlaced = this.poll.votePlaced;
     this.options = Array.from(this.poll.options.keys());
-    if(this.poll.active) {
-      this.websocketService.connect(this.poll.id);
+    if (this.poll.active) {
+      this.websocketService.connect();
     }
   }
 
   public vote(choice: string): void {
-    if (this.votePlaced === null && this.poll.active) {
+    if (this.poll.votePlaced === null && this.poll.active) {
       this.pollService.vote(this.poll.id, choice).subscribe(poll => {
-        this.votePlaced = choice;
+        this.poll.votePlaced = choice;
       });
     }
   }
 
-  public getVotesSum(): number {
-    return Array.from(this.poll.options.values()).reduce((acc, val) => acc + val, 0);
-  }
-
   public calculatePercentage(option: string): number {
-    let totalVotes: number = this.getVotesSum();
+    let totalVotes: number = this.poll.getVotesSum();
     let thisVotes: number = this.poll.options.get(option)!;
     return Math.round((thisVotes! / totalVotes) * 100);
   }
 
   public getVotesLink(): string {
-    if (this.routePollId) {
-      return '/poll/' + this.routePollId + '/votes';
+    if (this.routePollId || !this.poll.active) {
+      return '/poll/' + this.poll.id + '/votes';
     } else {
       return '/votes';
     }
+  }
+
+  public loadLatestPoll(): void {
+    window.location.href = "/";
   }
 }

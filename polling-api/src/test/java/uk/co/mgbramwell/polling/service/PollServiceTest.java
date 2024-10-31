@@ -1,21 +1,21 @@
 package uk.co.mgbramwell.polling.service;
 
-import uk.co.mgbramwell.polling.Application;
-import uk.co.mgbramwell.polling.data.PollRepository;
-import uk.co.mgbramwell.polling.exception.NoActivePollException;
-import uk.co.mgbramwell.polling.exception.UnkownPollException;
-import uk.co.mgbramwell.polling.model.Poll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-import uk.co.mgbramwell.polling.service.PollService;
+import uk.co.mgbramwell.polling.Application;
+import uk.co.mgbramwell.polling.data.PollRepository;
+import uk.co.mgbramwell.polling.exception.NoActivePollException;
+import uk.co.mgbramwell.polling.exception.UnkownPollException;
+import uk.co.mgbramwell.polling.model.Poll;
 
 import java.util.List;
 import java.util.Map;
@@ -36,22 +36,18 @@ public class PollServiceTest {
             Map.of("Lewis Hamilton", 0, "Lance Stroll", 0, "Max Verstappen", 0, "Fernando Alonso", 0);
     private static final Map<String, Integer> OPTION_SET_2 =
             Map.of("Bolton Wanderers", 0, "Preston North End", 0, "Fulham", 0, "Chelsea", 0);
-
-    private static Poll POLL_1;
-    private static Poll POLL_2;
-
-    @Autowired
-    private PollRepository pollRepository;
-
-    @Autowired
-    private PollService pollService;
-
     @Container
     public static GenericContainer mongoDBContainer = new GenericContainer(DockerImageName.parse("mongo:latest"))
             .withExposedPorts(27017)
             .withEnv("MONGO_INITDB_ROOT_USERNAME", "root")
             .withEnv("MONGO_INITDB_ROOT_PASSWORD", "root")
             .withEnv("MONGO_INITDB_DATABASE", "admin");
+    private static Poll POLL_1;
+    private static Poll POLL_2;
+    @Autowired
+    private PollRepository pollRepository;
+    @Autowired
+    private PollService pollService;
 
     @DynamicPropertySource
     static void containersProperties(DynamicPropertyRegistry registry) {
@@ -74,19 +70,35 @@ public class PollServiceTest {
     public void savePollSavesCorrectly() {
         assertThat(POLL_1.getId(), is(nullValue()));
 
-        Poll savedPoll = pollRepository.save(POLL_1);
+        Poll savedPoll = pollService.savePoll(POLL_1);
         assertThat(savedPoll.getId(), is(notNullValue()));
+        assertThat(savedPoll.isActive(), is(true));
+        assertThat(savedPoll.getDateCreated(), is(notNullValue()));
     }
 
     @Test
-    public void getAllPollsReturnsAll() {
+    public void getPollsByPageReturnsAll() {
         Poll savedPoll1 = pollRepository.save(POLL_1);
         Poll savedPoll2 = pollRepository.save(POLL_2);
 
-        List<Poll> pollList = pollService.getAllPolls();
+        Page<Poll> page = pollService.getPollsByPage(0, 2);
+        List<Poll> pollList = page.getContent();
+        assertThat(page.getTotalPages(), equalTo(1));
         assertThat(pollList.size(), equalTo(2));
         assertThat(pollList.getFirst(), samePropertyValuesAs(savedPoll1));
         assertThat(pollList.get(1), samePropertyValuesAs(savedPoll2));
+    }
+
+    @Test
+    public void getPollsByPageReturnsPaged() {
+        Poll savedPoll1 = pollRepository.save(POLL_1);
+        pollRepository.save(POLL_2);
+
+        Page<Poll> page = pollService.getPollsByPage(0, 1);
+        List<Poll> pollList = page.getContent();
+        assertThat(page.getTotalPages(), equalTo(2));
+        assertThat(pollList.size(), equalTo(1));
+        assertThat(pollList.getFirst(), samePropertyValuesAs(savedPoll1));
     }
 
     @Test
@@ -127,13 +139,13 @@ public class PollServiceTest {
         Poll savedPoll1 = pollRepository.save(POLL_1);
         pollRepository.save(POLL_2);
 
-        List<Poll> pollList = pollService.getAllPolls();
-        assertThat(pollList.size(), equalTo(2));
+        Page<Poll> page = pollService.getPollsByPage(0, 2);
+        assertThat(page.getContent().size(), equalTo(2));
 
         pollService.deletePoll(savedPoll1.getId());
 
-        pollList = pollService.getAllPolls();
-        assertThat(pollList.size(), equalTo(1));
+        page = pollService.getPollsByPage(0, 2);
+        assertThat(page.getContent().size(), equalTo(1));
 
         final String poll1Id = savedPoll1.getId();
         assertThrows(UnkownPollException.class, () -> pollService.getPollById(poll1Id));

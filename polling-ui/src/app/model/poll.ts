@@ -5,6 +5,7 @@ export class Poll {
     active: boolean;
     options: Map<string, number>;
     votePlaced: string;
+    dateCreated: string;
 
 
     constructor(newItem: any) {
@@ -13,5 +14,10 @@ export class Poll {
         this.active = newItem.active;
         this.options = new Map(Object.entries(newItem.options));
         this.votePlaced = newItem.votePlaced;
+        this.dateCreated = newItem.dateCreated;
+    }
+
+    getVotesSum(): number {
+        return Array.from(this.options.values()).reduce((acc, val) => acc + val, 0);
     }
 }

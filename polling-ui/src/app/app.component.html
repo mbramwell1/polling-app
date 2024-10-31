@@ -1,4 +1,26 @@
-<div class="logo-container">
-  <img src="./assets/logo.svg" />
-</div>
-<router-outlet></router-outlet>
+<mat-sidenav-container class="container">
+  <mat-sidenav #sidenav class="sidenav" position="end" mode="side" [(opened)]="opened">
+    <div class="controls-container">
+      <a (click)="previousPage()" class="previousPage" [ngClass]="{'disabled': currentPastPollPage === 0}">Previous
+        Page</a>
+      <a (click)="nextPage()" class="nextPage" [ngClass]="{'disabled': currentPastPollPage === totalPages-1}">Next
+        Page</a>
+    </div>
+    <div class="poll-container">
+      <app-box *ngFor="let poll of pastPolls" class="poll" [line1]="poll.name" 
+      [line2]="poll.getVotesSum() + ' Votes'"
+      [line3]="getVollPlaced(poll.votePlaced)"
+        [selected]="poll.active" (click)="loadPoll(poll)"></app-box>
+    </div>
+  </mat-sidenav>
+  <section>
+    <div class="top-bar">
+      <div class="logo-container">
+        <img src="./assets/logo.svg" />
+      </div>
+      <button class="reload-button" mat-stroked-button (click)="toggleSideNav()">{{opened ? 'Close' :
+        'Polls'}}</button>
+    </div>
+    <router-outlet></router-outlet>
+  </section>
+</mat-sidenav-container>

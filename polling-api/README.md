@@ -3,13 +3,6 @@
 This is the API submission for the Technical Test for Martin Bramwell.
 The submission uses the Spring Boot framework, along with RestAssured and TestContainers for testing.
 
-Some assumptions/compromises have been made:
-1. A Poll is active until a new Poll is created
-2. Creating a new Poll deactivates the current Active Poll
-3. Votes are only allowed on a Poll whilst the Poll is active
-4. A user cannot vote on the same Poll twice, or change their vote
-5. For simplicity, I am using the 'admin' database on Mongo along with the root user. This would not be advisable for a production system.
-
 ## Running the application via the Maven Wrapper
 
 The API needs a Mongo and Redis instance available. The easiest way to get started is to use the Spring Boot tools and Docker compose.
@@ -46,9 +39,9 @@ JavaDocs are available in
 [PollController.java](src/main/java/uk/co/mgbramwell/polling/api/PollController.java) and 
 [WebSocketController.java](src/main/java/uk/co/mgbramwell/polling/api/websocket/WebSocketController.java).
 
-A Demo Poll will be loaded when the application first starts up by an ApplicationRunner
-[DemoDataLoader.java](src/main/java/uk/co/mgbramwell/polling/api/DemoDataLoader.java). This Poll will be Active,
-and can be replaced by creating a new Poll using the REST API.
+Demo Polls will be loaded when the application first starts up by an ApplicationRunner
+[DemoDataLoader.java](src/main/java/uk/co/mgbramwell/polling/api/DemoDataLoader.java). This will increase startup time on first Launch. This can be disabled by setting Property
+value `demo.loadData=false`.
 
 Swagger is also included by default and once the Dev Mode Application is running, visit:
 [localhost:8080/swagger-ui/index.html](localhost:8080/swagger-ui/index.html). This will give you a graphical, interactive way to use

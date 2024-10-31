@@ -6,20 +6,32 @@
         <div>
             <div class="details-component  subtitle-container">
                 <div>
-                    {{getVotesSum()}} Votes -
-                    <span *ngIf="votePlaced === null">
-                        Cast your vote now!
+                    {{poll.getVotesSum()}} Votes -
+                    <span *ngIf="poll.votePlaced === null">
+                        <span *ngIf="poll.active">
+                            Cast your vote now!
+                        </span>
+                        <span *ngIf="!poll.active">
+                            This Poll has now Closed.<br/>
+                            <button class="reload-button" mat-stroked-button (click)="loadLatestPoll()">See the Latest Poll</button>
+                        </span>
                     </span> 
-                    <span *ngIf="votePlaced !== null">
-                        Thanks for your Response.
+                    <span *ngIf="poll.votePlaced !== null">
+                        <span>
+                            Thanks for your Response.
+                        </span>
                     </span>
+                    <div *ngIf="poll.votePlaced !== null && !poll.active">
+                        This Poll has now Closed.<br/>
+                        <button class="reload-button" mat-stroked-button (click)="loadLatestPoll()">See the Latest Poll</button>
+                    </div>
                 </div>
             </div>
 
             <app-result-bar *ngFor="let option of options" [option]="option" [pollActive]="poll.active"
-                [votePlaced]="votePlaced" [votePercentage]="calculatePercentage(option)" (voteClicked)="vote($event)"></app-result-bar>
+                [votePlaced]="poll.votePlaced" [votePercentage]="calculatePercentage(option)" (voteClicked)="vote($event)"></app-result-bar>
 
-            <a class="votes-link" *ngIf="votePlaced !== null" [routerLink]="getVotesLink()">See All Votes</a>
+            <a class="votes-link" *ngIf="poll.votePlaced !== null || !poll.active" [routerLink]="getVotesLink()">See All Votes</a>
         </div>
     </div>
     <div *ngIf="poll.id === undefined">

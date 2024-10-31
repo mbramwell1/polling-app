@@ -11,9 +11,10 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { MatButtonModule } from '@angular/material/button';
 import { PollService } from './service/poll.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { ResultBarComponent } from './components/result-bar/result-bar.component';
 import { PollVotesComponent } from './components/poll-votes/poll-votes.component';
-import { VoteBoxComponent } from './components/vote-box/vote-box.component';
+import { BoxComponent } from './components/box/box.component';
 
 
 @NgModule({
@@ -22,13 +23,14 @@ import { VoteBoxComponent } from './components/vote-box/vote-box.component';
     PollDetailsComponent,
     PollVotesComponent,
     ResultBarComponent,
-    VoteBoxComponent
+    BoxComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     MatButtonModule,
     MatProgressSpinnerModule,
+    MatSidenavModule
   ],
   providers: [
     provideHttpClient(), 

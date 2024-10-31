@@ -3,11 +3,32 @@
     margin-left: auto;
     margin-right: auto;
     margin-top: .5em;
+    display: flex;
+    flex-direction: column;
 
-    .back-link {
-        color: white;
-        margin: 0 auto 1em auto;
-        width: fit-content;
-        display: block;
+    .vote {
+        margin-bottom: .5em;
+    }
+
+    .controls-container {
+        display: flex;
+        flex: 1 1 0;
+        flex-direction: row;
+        margin-bottom: .5em;
+
+        .link {
+            color: white;
+            width: fit-content;
+            display: block;
+            cursor: pointer;
+            flex: 1 1 0;
+            width: 0;
+            text-align: center;
+        }
+    
+        .disabled {
+            color: rgb(87, 87, 87);
+            pointer-events: none;
+        }
     }
 }

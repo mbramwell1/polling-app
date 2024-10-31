@@ -1,6 +1,5 @@
 package uk.co.mgbramwell.polling.api.websocket;
 
-import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
@@ -8,10 +7,9 @@ import org.springframework.stereotype.Controller;
 public class WebSocketController {
 
     /**
-     * WebSocket STOMP Endpoint for Poll Vote updates
-     * @param pollId - the Poll ID to subscribe for updates
+     * WebSocket STOMP Endpoint for Active Poll updates
      */
-    @SendTo("/topic/poll/{pollId}")
-    public void pollSubscribe(@DestinationVariable String pollId) {
+    @SendTo("/topic/votes")
+    public void pollSubscribe() {
     }
 }

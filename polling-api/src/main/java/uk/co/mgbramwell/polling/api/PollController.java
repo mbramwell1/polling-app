@@ -1,19 +1,12 @@
 package uk.co.mgbramwell.polling.api;
 
-import uk.co.mgbramwell.polling.exception.AlreadyVotedException;
-import uk.co.mgbramwell.polling.exception.NoActivePollException;
-import uk.co.mgbramwell.polling.exception.PollInactiveException;
-import uk.co.mgbramwell.polling.exception.UnknownOptionException;
-import uk.co.mgbramwell.polling.exception.UnkownPollException;
-import uk.co.mgbramwell.polling.model.Poll;
-import uk.co.mgbramwell.polling.model.Vote;
-import uk.co.mgbramwell.polling.service.PollService;
-import uk.co.mgbramwell.polling.service.VoteService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,7 +16,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.co.mgbramwell.polling.exception.AlreadyVotedException;
+import uk.co.mgbramwell.polling.exception.NoActivePollException;
+import uk.co.mgbramwell.polling.exception.PollInactiveException;
+import uk.co.mgbramwell.polling.exception.UnknownOptionException;
+import uk.co.mgbramwell.polling.exception.UnkownPollException;
+import uk.co.mgbramwell.polling.model.Poll;
+import uk.co.mgbramwell.polling.model.Vote;
+import uk.co.mgbramwell.polling.service.PollService;
+import uk.co.mgbramwell.polling.service.VoteService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +51,7 @@ public class PollController {
 
     /**
      * Create the supplied Poll
+     *
      * @param poll - The Poll to create
      * @return The saved poll
      */
@@ -57,28 +61,44 @@ public class PollController {
     }
 
     /**
-     * Get All Polls
+     * Get All Polls in Pageable format to limit hits on the database to calculate Votes
+     *
+     * @param page        - The page to get, defaults to 0
+     * @param number      - The number per page, defaults to 10
      * @param httpSession - HttpSession used to set Votes applied to Polls
-     * @return The List of all Polls
+     * @return ResponseEntity with List of Polls and pages Header for total pages
      */
     @GetMapping
-    public List<Poll> getAllPolls(HttpSession httpSession) {
+    public ResponseEntity<List<Poll>> getPollsByPage(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int number, HttpSession httpSession) {
         Map<String, String> sessionVotes = getSessionVotes(httpSession);
-        return pollService.getAllPolls()
-                .parallelStream()
-                .map(poll -> setVotedOption(poll, sessionVotes)).collect(
+        Page<Poll> foundPage = pollService.getPollsByPage(page, number);
+        List<Poll> polls = foundPage.getContent().parallelStream()
+                .map(poll -> {
+                    poll = setVotedOption(poll, sessionVotes);
+                    try {
+                        return calculateVoteTotals(poll);
+                    } catch (UnkownPollException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).collect(
                         Collectors.toList());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("pages", Integer.toString(foundPage.getTotalPages()));
+
+        return ResponseEntity.ok().headers(headers).body(polls);
     }
 
     /**
      * Get Poll by supplied ID
-     * @param pollId - The Poll ID
+     *
+     * @param pollId      - The Poll ID
      * @param httpSession - HttpSession used to set Vote applied to Poll
      * @return The found Poll
      * @throws UnkownPollException - The Provided Poll ID does not Exist
      */
     @GetMapping("/{pollId}")
-    public Poll getPollById(@PathVariable("pollId") String pollId, HttpSession httpSession) throws UnkownPollException {
+    public Poll getPollById(@PathVariable String pollId, HttpSession httpSession) throws UnkownPollException {
         Map<String, String> sessionVotes = getSessionVotes(httpSession);
 
         Poll poll = setVotedOption(pollService.getPollById(pollId), sessionVotes);
@@ -87,10 +107,11 @@ public class PollController {
 
     /**
      * Get the current Active Poll
+     *
      * @param httpSession - HttpSession used to set Vote applied to Poll
      * @return The found Poll
      * @throws NoActivePollException - No Poll is currently Active
-     * @throws UnkownPollException - Not Used, Poll will always exist if Active
+     * @throws UnkownPollException   - Not Used, Poll will always exist if Active
      */
     @GetMapping("/active")
     public Poll getActivePoll(HttpSession httpSession) throws NoActivePollException, UnkownPollException {
@@ -102,40 +123,58 @@ public class PollController {
 
     /**
      * Get the Votes submitted for the current Active Poll
+     *
+     * @param page   - The page to get, defaults to 0
+     * @param number - The number per page, defaults to 10
      * @return List of Votes for the Poll
      * @throws NoActivePollException - No Poll is currently Active
-     * @throws UnkownPollException - Not Used, Poll will always exist if Active
+     * @throws UnkownPollException   - Not Used, Poll will always exist if Active
      */
     @GetMapping("/active/vote")
-    public List<Vote> getVotesForActivePoll() throws NoActivePollException, UnkownPollException {
+    public ResponseEntity<List<Vote>> getVotesForActivePoll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int number) throws NoActivePollException, UnkownPollException {
         Poll poll = pollService.getActivePoll();
-        return voteService.getVotesByPollId(poll.getId());
+
+        Page<Vote> foundPage = voteService.getVotesByPollId(poll.getId(), page, number);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("pages", Integer.toString(foundPage.getTotalPages()));
+
+        return ResponseEntity.ok().headers(headers).body(foundPage.getContent());
     }
 
     /**
      * Get the Votes submitted for a Specified Poll
-     * @param id - The Poll ID
+     *
+     * @param page   - The page to get, defaults to 0
+     * @param number - The number per page, defaults to 10
+     * @param pollId - The Poll ID
      * @return List of Votes for the Poll
      * @throws UnkownPollException - The Provided Poll ID does not Exist
      */
     @GetMapping("/{pollId}/vote")
-    public List<Vote> getVotesForPoll(@PathVariable("pollId") String id) throws UnkownPollException {
-        return voteService.getVotesByPollId(id);
+    public ResponseEntity<List<Vote>> getVotesForPoll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int number, @PathVariable String pollId) throws UnkownPollException {
+        Page<Vote> foundPage = voteService.getVotesByPollId(pollId, page, number);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("pages", Integer.toString(foundPage.getTotalPages()));
+
+        return ResponseEntity.ok().headers(headers).body(foundPage.getContent());
     }
 
     /**
      * Place a Vote on a specified Poll
-     * @param pollId - The Poll to Vote on
-     * @param vote - The Vote submitted
+     *
+     * @param pollId      - The Poll to Vote on
+     * @param vote        - The Vote submitted
      * @param httpSession - HttpSession used to check for existing Votes for the Session
      * @return The saved Vote
      * @throws UnknownOptionException - The Option provided in the Vote does not exist on the Poll
-     * @throws UnkownPollException - The specified Poll does not exist
-     * @throws PollInactiveException - The specified Poll is not the Active Poll
-     * @throws AlreadyVotedException - The Session has already Voted on this Poll
+     * @throws UnkownPollException    - The specified Poll does not exist
+     * @throws PollInactiveException  - The specified Poll is not the Active Poll
+     * @throws AlreadyVotedException  - The Session has already Voted on this Poll
      */
     @PutMapping("/{pollId}/vote")
-    public Vote vote(@PathVariable("pollId") String pollId, @Valid @RequestBody Vote vote, HttpSession httpSession) throws UnknownOptionException, UnkownPollException, PollInactiveException, AlreadyVotedException {
+    public Vote vote(@PathVariable String pollId, @Valid @RequestBody Vote vote, HttpSession httpSession) throws UnknownOptionException, UnkownPollException, PollInactiveException, AlreadyVotedException {
         Map<String, String> sessionVotes = getSessionVotes(httpSession);
         if (sessionVotes != null && sessionVotes.containsKey(pollId)) {
             LOG.debug("Vote: {} found for Poll ID: {} on Session: {}", sessionVotes.get(pollId), pollId,
@@ -153,21 +192,20 @@ public class PollController {
 
     /**
      * Delete a Poll by ID
+     *
      * @param pollId - The Poll to delete
      * @return Response Entity of OK if Deleted
      * @throws UnkownPollException - The specified Poll does not exist
      */
     @DeleteMapping("/{pollId}")
-    public ResponseEntity<Void> deletePollById(@PathVariable("pollId") String pollId) throws UnkownPollException {
+    public ResponseEntity<Void> deletePollById(@PathVariable String pollId) throws UnkownPollException {
         pollService.deletePoll(pollId);
         voteService.deleteByPollId(pollId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     private Poll calculateVoteTotals(Poll poll) throws UnkownPollException {
-        List<Vote> votes = voteService.getVotesByPollId(poll.getId());
-        votes.parallelStream().collect(Collectors.groupingBy(Vote::getChoice))
-                .forEach((option, filteredVotes) -> poll.addVotes(option, filteredVotes.size()));
+        poll.setOptions(voteService.countVotesByOptions(poll.getId()));
         return poll;
     }
 

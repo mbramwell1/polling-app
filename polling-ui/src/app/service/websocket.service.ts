@@ -13,11 +13,11 @@ export class WebsocketService {
 
   constructor() { }
 
-  connect(pollId: String): void {
+  connect(): void {
     this.client = new Client({
       brokerURL: environment.pollApi.url + '/ws',
       onConnect: () => {
-        this.client!.subscribe('/topic/poll/' + pollId, message => {
+        this.client!.subscribe('/topic/votes', message => {
           let websocketMessage = new WebSocketMessage(JSON.parse(message.body) as WebSocketMessage);
           this.messageReceived.next(websocketMessage);
         });

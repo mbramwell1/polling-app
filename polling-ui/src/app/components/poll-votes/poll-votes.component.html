@@ -1,4 +1,9 @@
 <div class="votes-container">
-    <a class="back-link" [routerLink]="getBackLink()">Back</a>
-    <app-vote-box *ngFor="let vote of votes.slice().reverse()" [vote]="vote"></app-vote-box>
+    <div class="controls-container">
+        <a (click)="previousPage()" class="link" [ngClass]="{'disabled': currentVotesPageNumber === 0}">Previous Page</a>
+        <a class="link" [routerLink]="getBackLink()">Back</a>
+        <a (click)="nextPage()" class="link" [ngClass]="{'disabled': currentVotesPageNumber === totalPages-1}">NextPage</a>
+    </div>
+    <app-box class="vote" *ngFor="let vote of votes.slice().reverse()" [line1]="vote.choice"
+        [line2]="vote.dateCreated | date: 'dd/MM/yyyy HH:mm:ss'"></app-box>
 </div>

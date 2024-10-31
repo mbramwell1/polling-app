@@ -1,8 +1,3 @@
-.pre-vote:hover {
-    background-color: rgba(185, 120, 247, 0.4);
-    cursor: pointer;
-}
-
 .loading-spinner {
     margin: auto;
 }
@@ -51,8 +46,13 @@
     }
 }
 
-.pre-vote {
+.not-voted {
     .text-container {
         top: 1.7em;
     }
+}
+
+.poll-open:hover {
+    background-color: rgba(185, 120, 247, 0.4);
+    cursor: pointer;
 }
