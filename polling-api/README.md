@@ -46,3 +46,7 @@ value `demo.loadData=false`.
 Swagger is also included by default and once the Dev Mode Application is running, visit:
 [localhost:8080/swagger-ui/index.html](localhost:8080/swagger-ui/index.html). This will give you a graphical, interactive way to use
 the API.
+
+## Contributing
+The [code-style.xml](code-style.xml) Code Style file included in this Repo is for IntelliJ IDEA.
+Please import this code style when contributing as although close to the default IntelliJ style, it is slightly different.

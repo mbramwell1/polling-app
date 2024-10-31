@@ -33,10 +33,10 @@ export class PollService {
     return this.http.get<Poll>(url, this.httpOptions);
   }
 
-  vote(pollId: string, choice: string): Observable<Poll> {
+  vote(pollId: string, choice: string): Observable<Vote> {
     let vote = new Vote(pollId, choice);
     let url = `${environment.pollApi.url}${this.baseUrl}/${pollId}/vote`;
-    return this.http.put<Poll>(url, vote, this.httpOptions);
+    return this.http.put<Vote>(url, vote, this.httpOptions);
   }
 
   getVotesForPoll(pollId: string, page: number, number: number): Observable<HttpResponse<Vote[]>> {

@@ -5,33 +5,40 @@
         </div>
         <div>
             <div class="details-component  subtitle-container">
-                <div>
+                <span class="votes-count-container">
                     {{poll.getVotesSum()}} Votes -
-                    <span *ngIf="poll.votePlaced === null">
-                        <span *ngIf="poll.active">
-                            Cast your vote now!
-                        </span>
-                        <span *ngIf="!poll.active">
-                            This Poll has now Closed.<br/>
-                            <button class="reload-button" mat-stroked-button (click)="loadLatestPoll()">See the Latest Poll</button>
-                        </span>
-                    </span> 
-                    <span *ngIf="poll.votePlaced !== null">
-                        <span>
-                            Thanks for your Response.
-                        </span>
+                </span>
+
+                <span *ngIf="poll.votePlaced === null">
+                    <span class="text-container" *ngIf="poll.active">
+                        Cast your vote now!
                     </span>
-                    <div *ngIf="poll.votePlaced !== null && !poll.active">
-                        This Poll has now Closed.<br/>
-                        <button class="reload-button" mat-stroked-button (click)="loadLatestPoll()">See the Latest Poll</button>
-                    </div>
+                    <span class="text-container" *ngIf="!poll.active">
+                        This Poll has now Closed.
+                    </span>
+                </span>
+
+                <span *ngIf="poll.votePlaced !== null">
+                    <span class="text-container" *ngIf="poll.active">
+                        Thanks for your Response.
+                    </span>
+                    <span class="text-container" *ngIf="!poll.active">
+                        Thanks for your Response, this Poll has now Closed.
+                    </span>
+                </span>
+
+                <div *ngIf="!poll.active">
+                    <button class="reload-button" mat-stroked-button (click)="loadLatestPoll()">See the Latest
+                        Poll</button>
                 </div>
             </div>
 
             <app-result-bar *ngFor="let option of options" [option]="option" [pollActive]="poll.active"
-                [votePlaced]="poll.votePlaced" [votePercentage]="calculatePercentage(option)" (voteClicked)="vote($event)"></app-result-bar>
+                [votePlaced]="poll.votePlaced" [votePercentage]="calculatePercentage(option)"
+                (voteClicked)="vote($event)"></app-result-bar>
 
-            <a class="votes-link" *ngIf="poll.votePlaced !== null || !poll.active" [routerLink]="getVotesLink()">See All Votes</a>
+            <a class="votes-link" *ngIf="poll.votePlaced !== null || !poll.active" [routerLink]="getVotesLink()">See All
+                Votes</a>
         </div>
     </div>
     <div *ngIf="poll.id === undefined">

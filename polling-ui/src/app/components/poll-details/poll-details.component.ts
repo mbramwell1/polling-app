@@ -38,8 +38,8 @@ export class PollDetailsComponent {
           console.log("Invalid Vote received for Poll - " + JSON.stringify(websocketMessage));
         }
       } else if (websocketMessage.message === 'newpoll' && this.poll.active) {
-        console.log('Poll Closed');
         this.poll.active = false;
+        this.websocketService.closeConnection();
       }
     });
   }

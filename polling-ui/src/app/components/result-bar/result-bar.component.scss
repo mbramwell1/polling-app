@@ -32,6 +32,10 @@
         text-align: center;
         color: white;
     }
+
+    .text-lower {
+        top: 1.7em;
+    }
 }
 
 .selected {
@@ -43,12 +47,6 @@
 
     .text-container {
         font-weight: bold;
-    }
-}
-
-.not-voted {
-    .text-container {
-        top: 1.7em;
     }
 }
 

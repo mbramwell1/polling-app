@@ -1,12 +1,12 @@
 <div class="vote-box" [ngClass]="{'selected': selected === true}">
     <div class="text-container">
-        <div>
+        <div class="line1">
             {{line1}}
         </div>
-        <div *ngIf="line2 !== null">
+        <div *ngIf="line2 !== null" class="line2">
             {{line2}}
         </div>
-        <div *ngIf="line3 !== null">
+        <div *ngIf="line3 !== null" class="line3">
             {{line3}}
         </div>
     </div>

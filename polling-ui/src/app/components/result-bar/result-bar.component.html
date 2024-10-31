@@ -1,15 +1,15 @@
 <div class="result-bar" (click)="vote()"
     [ngClass]="{'selected': votePlaced === option, 
-    'not-voted' : votePlaced === null, 
-    'poll-open': pollActive === true}">
-    <div *ngIf="votePlaced !== null" class="progress-bar"
+    'poll-open': pollActive === true,
+    'poll-closed': pollActive === false}">
+    <div *ngIf="votePlaced !== null || pollActive === false" class="progress-bar"
         [ngStyle]="{'width': votePercentage + '%', 'max-width': votePercentage + '%', 'min-width': votePercentage + '%'}">
     </div>
-    <div class="text-container">
-        <div>
+    <div class="text-container" [ngClass]="{'text-lower' : votePlaced === null && pollActive === true}">
+        <div class="optionContainer">
             {{option}}
         </div>
-        <div *ngIf="votePlaced !== null">
+        <div *ngIf="votePlaced !== null || pollActive === false" class="percentageContainer">
             {{votePercentage + '%'}}
         </div>
     </div>
