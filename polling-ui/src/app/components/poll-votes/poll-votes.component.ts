@@ -3,6 +3,7 @@ import { PollService } from '../../service/poll.service';
 import { ActivatedRoute } from '@angular/router';
 import { Vote } from '../../model/vote';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Poll } from '../../model/poll';
 
 @Component({
   selector: 'app-poll-votes',
@@ -28,9 +29,38 @@ export class PollVotesComponent {
   ) {
     this.pollId = this.route.snapshot.paramMap.get('id');
     if (this.pollId !== null) {
-      this.getVotes(this.pollId);
+      this.pollService.getPollById(this.pollId).subscribe({
+        next: (response) => this.handlePollResponse(response.body!),
+        error: (error) => this.handlePollError(error, false),
+      });
     } else {
-      this.getVotes('active');
+      this.pollService.getActivePoll().subscribe({
+        next: (response) => this.handlePollResponse(response.body!),
+        error: (error) => this.handlePollError(error, true),
+      });
+    }
+  }
+
+  private handlePollResponse(poll: Poll): void {
+    if (poll.active && poll.votePlaced === null) {
+      this.errorMessage =
+        "You can't see Votes for an Active Poll you have not voted in.";
+    } else {
+      this.pollId = poll.id;
+      this.getVotes(this.pollId);
+    }
+  }
+
+  private handlePollError(error: any, active: boolean): void {
+    if (error.status === 404) {
+      if (active) {
+        this.errorMessage =
+          "We don't have an Active Poll right now. Please try again later.";
+      } else {
+        this.errorMessage = 'Poll Not Found';
+      }
+    } else {
+      this.errorMessage = 'An Error has Occurred. Please try again later.';
     }
   }
 

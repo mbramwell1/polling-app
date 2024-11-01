@@ -26,11 +26,54 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatPaginatorHarness } from '@angular/material/paginator/testing';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { Poll } from '../../model/poll';
 
 let component: PollVotesComponent;
 let fixture: ComponentFixture<PollVotesComponent>;
 
 let mockPollService: jasmine.SpyObj<PollService>;
+
+let closedPoll = JSON.parse(`{
+    "id": "1234",
+    "name": "Who's the best F1 Driver?",
+    "active": false,
+    "options": {
+        "Lewis Hamilton": 0,
+        "Fernando Alonso": 0,
+        "Lance Stroll": 0,
+        "Max Verstappen": 0
+    },
+    "votePlaced": null,
+    "dateCreated": "2024-10-31T15:14:43"
+}`);
+
+let openPollNoVote = JSON.parse(`{
+    "id": "1234",
+    "name": "Who's the best F1 Driver?",
+    "active": true,
+    "options": {
+        "Lewis Hamilton": 0,
+        "Fernando Alonso": 0,
+        "Lance Stroll": 0,
+        "Max Verstappen": 0
+    },
+    "votePlaced": null,
+    "dateCreated": "2024-10-31T15:14:43"
+}`);
+
+let openPollVote = JSON.parse(`{
+    "id": "1234",
+    "name": "Who's the best F1 Driver?",
+    "active": true,
+    "options": {
+        "Lewis Hamilton": 0,
+        "Fernando Alonso": 0,
+        "Lance Stroll": 0,
+        "Max Verstappen": 0
+    },
+    "votePlaced": "Lewis Hamilton",
+    "dateCreated": "2024-10-31T15:14:43"
+}`);
 
 const voteArray1: Vote[] = [
   new Vote('1212', 'Test Choice 1', 'AnId1', '2024-11-01T15:14:43'),
@@ -76,9 +119,13 @@ const headers: HttpHeaders = new HttpHeaders({ pages: 2, total: 14 });
 
 let loader: HarnessLoader;
 
-describe('When Poll ID is Provided', () => {
+describe('When Poll ID is Provided and poll is open with vote', () => {
   beforeEach(waitForAsync(() => {
-    mockPollService = jasmine.createSpyObj(PollService, ['getVotesForPoll']);
+    mockPollService = jasmine.createSpyObj(PollService, [
+      'getPollById',
+      'getActivePoll',
+      'getVotesForPoll',
+    ]);
 
     const httpResponse1: HttpResponse<Vote[]> = new HttpResponse<Vote[]>({
       status: 200,
@@ -90,6 +137,16 @@ describe('When Poll ID is Provided', () => {
       body: voteArray2,
       headers: headers,
     });
+
+    const pollResponse: HttpResponse<Poll> = new HttpResponse<Poll>({
+      status: 200,
+      body: openPollVote,
+    });
+
+    mockPollService.getPollById
+      .withArgs('1234')
+      .and.returnValue(of(pollResponse));
+
     mockPollService.getVotesForPoll
       .withArgs('1234', 0, 7)
       .and.returnValue(of(httpResponse1));
@@ -257,9 +314,13 @@ describe('When Poll ID is Provided', () => {
   });
 });
 
-describe('When Poll ID is NOT Provided', () => {
+describe('When Poll ID is NOT Provided and poll is active with vote', () => {
   beforeEach(waitForAsync(() => {
-    mockPollService = jasmine.createSpyObj(PollService, ['getVotesForPoll']);
+    mockPollService = jasmine.createSpyObj(PollService, [
+      'getPollById',
+      'getActivePoll',
+      'getVotesForPoll',
+    ]);
     const httpResponse1: HttpResponse<Vote[]> = new HttpResponse<Vote[]>({
       status: 200,
       body: voteArray3,
@@ -270,11 +331,208 @@ describe('When Poll ID is NOT Provided', () => {
       body: voteArray4,
       headers: headers,
     });
+
+    const pollResponse: HttpResponse<Poll> = new HttpResponse<Poll>({
+      status: 200,
+      body: openPollVote,
+    });
+
+    mockPollService.getActivePoll.and.returnValue(of(pollResponse));
+
     mockPollService.getVotesForPoll
-      .withArgs('active', 0, 7)
+      .withArgs('1234', 0, 7)
       .and.returnValue(of(httpResponse1));
     mockPollService.getVotesForPoll
-      .withArgs('active', 1, 7)
+      .withArgs('1234', 1, 7)
+      .and.returnValue(of(httpResponse2));
+
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { paramMap: convertToParamMap({}) } },
+        },
+        {
+          provide: PollService,
+          useValue: mockPollService,
+        },
+      ],
+      declarations: [PollVotesComponent, BoxComponent],
+      imports: [AppRoutingModule, MatPaginatorModule],
+    }).compileComponents();
+  }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(PollVotesComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeDefined();
+  });
+
+  it('should get votes for poll id', () => {
+    const nativeElement = fixture.nativeElement;
+    const { debugElement } = fixture;
+
+    expect(fixture.componentInstance.totalPages).toBe(2);
+    expect(fixture.componentInstance.currentVotesPageNumber).toBe(0);
+
+    expect(nativeElement.querySelector('.votes-container')).toBeTruthy();
+
+    const votes = debugElement.queryAll(By.css('.box'));
+    expect(votes.length).toBe(7);
+    expect(votes[0].children[0].children[0].nativeNode.innerText).toBe(
+      'Test Choice 15',
+    );
+    expect(votes[0].children[0].children[1].nativeNode.innerText).toBe(
+      '30/10/2024 15:14:43',
+    );
+    expect(votes[0].children[0].children[2]).toBeUndefined();
+
+    expect(votes[6].children[0].children[0].nativeNode.innerText).toBe(
+      'Test Choice 21',
+    );
+    expect(votes[6].children[0].children[1].nativeNode.innerText).toBe(
+      '30/10/2024 15:14:43',
+    );
+    expect(votes[6].children[0].children[2]).toBeUndefined();
+  });
+
+  it('paging should load new votes', async () => {
+    loader = TestbedHarnessEnvironment.loader(fixture);
+    const nativeElement = fixture.nativeElement;
+    const { debugElement } = fixture;
+
+    expect(mockPollService.getVotesForPoll).toHaveBeenCalledTimes(1);
+
+    expect(fixture.componentInstance.totalPages).toBe(2);
+    expect(fixture.componentInstance.currentVotesPageNumber).toBe(0);
+
+    expect(nativeElement.querySelector('.votes-container')).toBeTruthy();
+
+    let votes = debugElement.queryAll(By.css('.box'));
+    expect(votes.length).toBe(7);
+    expect(votes[0].children[0].children[0].nativeNode.innerText).toBe(
+      'Test Choice 15',
+    );
+    expect(votes[0].children[0].children[1].nativeNode.innerText).toBe(
+      '30/10/2024 15:14:43',
+    );
+    expect(votes[0].children[0].children[2]).toBeUndefined();
+
+    expect(votes[6].children[0].children[0].nativeNode.innerText).toBe(
+      'Test Choice 21',
+    );
+    expect(votes[6].children[0].children[1].nativeNode.innerText).toBe(
+      '30/10/2024 15:14:43',
+    );
+    expect(votes[6].children[0].children[2]).toBeUndefined();
+
+    const paginator = await loader.getHarness(MatPaginatorHarness);
+    await paginator.goToNextPage();
+
+    fixture.detectChanges();
+
+    expect(mockPollService.getVotesForPoll).toHaveBeenCalledTimes(2);
+
+    expect(fixture.componentInstance.totalPages).toBe(2);
+    expect(fixture.componentInstance.currentVotesPageNumber).toBe(1);
+
+    expect(nativeElement.querySelector('.votes-container')).toBeTruthy();
+
+    votes = debugElement.queryAll(By.css('.box'));
+    expect(votes.length).toBe(7);
+    expect(votes[0].children[0].children[0].nativeNode.innerText).toBe(
+      'Test Choice 22',
+    );
+    expect(votes[0].children[0].children[1].nativeNode.innerText).toBe(
+      '29/10/2024 15:14:43',
+    );
+    expect(votes[0].children[0].children[2]).toBeUndefined();
+
+    expect(votes[6].children[0].children[0].nativeNode.innerText).toBe(
+      'Test Choice 28',
+    );
+    expect(votes[6].children[0].children[1].nativeNode.innerText).toBe(
+      '29/10/2024 15:14:43',
+    );
+    expect(votes[6].children[0].children[2]).toBeUndefined();
+
+    await paginator.goToNextPage();
+
+    fixture.detectChanges();
+
+    expect(mockPollService.getVotesForPoll).toHaveBeenCalledTimes(2);
+
+    await paginator.goToPreviousPage();
+
+    fixture.detectChanges();
+
+    expect(mockPollService.getVotesForPoll).toHaveBeenCalledTimes(3);
+
+    expect(fixture.componentInstance.totalPages).toBe(2);
+    expect(fixture.componentInstance.currentVotesPageNumber).toBe(0);
+
+    expect(nativeElement.querySelector('.votes-container')).toBeTruthy();
+
+    votes = debugElement.queryAll(By.css('.box'));
+    expect(votes.length).toBe(7);
+    expect(votes[0].children[0].children[0].nativeNode.innerText).toBe(
+      'Test Choice 15',
+    );
+    expect(votes[0].children[0].children[1].nativeNode.innerText).toBe(
+      '30/10/2024 15:14:43',
+    );
+    expect(votes[0].children[0].children[2]).toBeUndefined();
+
+    expect(votes[6].children[0].children[0].nativeNode.innerText).toBe(
+      'Test Choice 21',
+    );
+    expect(votes[6].children[0].children[1].nativeNode.innerText).toBe(
+      '30/10/2024 15:14:43',
+    );
+    expect(votes[6].children[0].children[2]).toBeUndefined();
+
+    await paginator.goToPreviousPage;
+
+    fixture.detectChanges();
+
+    expect(mockPollService.getVotesForPoll).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('When Poll is closed with no vote still displays data', () => {
+  beforeEach(waitForAsync(() => {
+    mockPollService = jasmine.createSpyObj(PollService, [
+      'getPollById',
+      'getActivePoll',
+      'getVotesForPoll',
+    ]);
+    const httpResponse1: HttpResponse<Vote[]> = new HttpResponse<Vote[]>({
+      status: 200,
+      body: voteArray3,
+      headers: headers,
+    });
+    const httpResponse2: HttpResponse<Vote[]> = new HttpResponse<Vote[]>({
+      status: 200,
+      body: voteArray4,
+      headers: headers,
+    });
+
+    const pollResponse: HttpResponse<Poll> = new HttpResponse<Poll>({
+      status: 200,
+      body: closedPoll,
+    });
+
+    mockPollService.getActivePoll.and.returnValue(of(pollResponse));
+
+    mockPollService.getVotesForPoll
+      .withArgs('1234', 0, 7)
+      .and.returnValue(of(httpResponse1));
+    mockPollService.getVotesForPoll
+      .withArgs('1234', 1, 7)
       .and.returnValue(of(httpResponse2));
 
     TestBed.configureTestingModule({
@@ -474,13 +732,36 @@ describe('votes By ID Error Handling', () => {
     expect(component).toBeDefined();
   });
 
+  it('should display cant see votes for poll not voted', () => {
+    const nativeElement = fixture.nativeElement;
+
+    const req = httpTesting.expectOne(
+      {
+        method: 'GET',
+        url: 'http://localhost:8080/poll/1234',
+      },
+      'Request for Votes by ID',
+    );
+    req.flush(openPollNoVote, {
+      headers: headers,
+    });
+
+    fixture.detectChanges();
+
+    expect(nativeElement.querySelector('.votes-parent-container')).toBeTruthy();
+    expect(nativeElement.querySelector('.error-container')).toBeTruthy();
+    expect(nativeElement.querySelector('.error-container').innerText).toBe(
+      "You can't see Votes for an Active Poll you have not voted in.",
+    );
+  });
+
   it('should display poll not found error', () => {
     const nativeElement = fixture.nativeElement;
 
     const req = httpTesting.expectOne(
       {
         method: 'GET',
-        url: 'http://localhost:8080/poll/1234/vote?page=0&number=7',
+        url: 'http://localhost:8080/poll/1234',
       },
       'Request for Votes by ID',
     );
@@ -501,7 +782,7 @@ describe('votes By ID Error Handling', () => {
     const req = httpTesting.expectOne(
       {
         method: 'GET',
-        url: 'http://localhost:8080/poll/1234/vote?page=0&number=7',
+        url: 'http://localhost:8080/poll/1234',
       },
       'Request for Votes by ID',
     );
@@ -520,6 +801,17 @@ describe('votes By ID Error Handling', () => {
     loader = TestbedHarnessEnvironment.loader(fixture);
     const nativeElement = fixture.nativeElement;
     const { debugElement } = fixture;
+
+    const pollReq = httpTesting.expectOne(
+      {
+        method: 'GET',
+        url: 'http://localhost:8080/poll/1234',
+      },
+      'Request for poll by ID',
+    );
+    pollReq.flush(openPollVote, {
+      headers: headers,
+    });
 
     const req = httpTesting.expectOne(
       {
@@ -603,13 +895,36 @@ describe('votes for Active Poll Error Handling', () => {
     expect(component).toBeDefined();
   });
 
+  it('should display cant see votes for poll not voted', () => {
+    const nativeElement = fixture.nativeElement;
+
+    const req = httpTesting.expectOne(
+      {
+        method: 'GET',
+        url: 'http://localhost:8080/poll/active',
+      },
+      'Request for Votes by ID',
+    );
+    req.flush(openPollNoVote, {
+      headers: headers,
+    });
+
+    fixture.detectChanges();
+
+    expect(nativeElement.querySelector('.votes-parent-container')).toBeTruthy();
+    expect(nativeElement.querySelector('.error-container')).toBeTruthy();
+    expect(nativeElement.querySelector('.error-container').innerText).toBe(
+      "You can't see Votes for an Active Poll you have not voted in.",
+    );
+  });
+
   it('should display poll not found error', () => {
     const nativeElement = fixture.nativeElement;
 
     const req = httpTesting.expectOne(
       {
         method: 'GET',
-        url: 'http://localhost:8080/poll/active/vote?page=0&number=7',
+        url: 'http://localhost:8080/poll/active',
       },
       'Request for Votes by Active',
     );
@@ -630,7 +945,7 @@ describe('votes for Active Poll Error Handling', () => {
     const req = httpTesting.expectOne(
       {
         method: 'GET',
-        url: 'http://localhost:8080/poll/active/vote?page=0&number=7',
+        url: 'http://localhost:8080/poll/active',
       },
       'Request for Votes by Active',
     );
@@ -650,10 +965,21 @@ describe('votes for Active Poll Error Handling', () => {
     const nativeElement = fixture.nativeElement;
     const { debugElement } = fixture;
 
+    const pollReq = httpTesting.expectOne(
+      {
+        method: 'GET',
+        url: 'http://localhost:8080/poll/active',
+      },
+      'Request for poll by active',
+    );
+    pollReq.flush(openPollVote, {
+      headers: headers,
+    });
+
     const req = httpTesting.expectOne(
       {
         method: 'GET',
-        url: 'http://localhost:8080/poll/active/vote?page=0&number=7',
+        url: 'http://localhost:8080/poll/1234/vote?page=0&number=7',
       },
       'Request for Votes by Active',
     );
@@ -674,7 +1000,7 @@ describe('votes for Active Poll Error Handling', () => {
     const pageReq = httpTesting.expectOne(
       {
         method: 'GET',
-        url: 'http://localhost:8080/poll/active/vote?page=1&number=7',
+        url: 'http://localhost:8080/poll/1234/vote?page=1&number=7',
       },
       'Request Page by Active',
     );

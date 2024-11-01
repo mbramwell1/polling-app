@@ -123,28 +123,6 @@ public class PollController {
     }
 
     /**
-     * Get the Votes submitted for the current Active Poll
-     *
-     * @param page   - The page to get, defaults to 0
-     * @param number - The number per page, defaults to 10
-     * @return List of Votes for the Poll
-     * @throws NoActivePollException - No Poll is currently Active
-     * @throws UnkownPollException   - Not Used, Poll will always exist if Active
-     */
-    @GetMapping("/active/vote")
-    public ResponseEntity<List<Vote>> getVotesForActivePoll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int number) throws NoActivePollException, UnkownPollException {
-        Poll poll = pollService.getActivePoll();
-
-        Page<Vote> foundPage = voteService.getVotesByPollId(poll.getId(), page, number);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("pages", Integer.toString(foundPage.getTotalPages()));
-        headers.set("total", Long.toString(foundPage.getTotalElements()));
-
-        return ResponseEntity.ok().headers(headers).body(foundPage.getContent());
-    }
-
-    /**
      * Get the Votes submitted for a Specified Poll
      *
      * @param page   - The page to get, defaults to 0

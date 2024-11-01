@@ -119,7 +119,6 @@ describe('App Component Tests', () => {
   });
 
   it('open polls list opens', () => {
-    loader = TestbedHarnessEnvironment.loader(fixture);
     const nativeElement = fixture.nativeElement;
     const component = fixture.componentInstance;
     const { debugElement } = fixture;

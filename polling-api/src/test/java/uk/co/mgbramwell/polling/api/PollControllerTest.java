@@ -243,46 +243,6 @@ public class PollControllerTest {
     }
 
     @Test
-    public void getVotesForActivePollReturnsOk() {
-        POLL_1.setActive(true);
-        POLL_1 = pollRepository.save(POLL_1);
-
-        Vote vote1 = Vote.builder()
-                .sessionId("1234")
-                .pollId(POLL_1.getId())
-                .choice("Lewis Hamilton").build();
-        Vote vote2 = Vote.builder()
-                .sessionId("9876")
-                .pollId(POLL_1.getId())
-                .choice("Fernando Alonso").build();
-        Vote voteNotToReturn = Vote.builder()
-                .sessionId("AAAA")
-                .pollId(POLL_2.getId())
-                .choice("Fulham").build();
-
-        vote1 = voteRepository.save(vote1);
-        vote2 = voteRepository.save(vote2);
-        voteRepository.save(voteNotToReturn);
-
-        given()
-                .when()
-                .get("/poll/active/vote")
-                .then()
-                .statusCode(200)
-                .header("pages", equalTo("1"))
-                .header("total", equalTo("2"))
-                .body(".", hasSize(2))
-                .body("[0].id", equalTo(vote1.getId()))
-                .body("[0].pollId", equalTo(vote1.getPollId()))
-                .body("[0].choice", equalTo(vote1.getChoice()))
-                .body("[0].dateCreated", equalTo(vote1.getDateCreated().toString()))
-                .body("[1].id", equalTo(vote2.getId()))
-                .body("[1].pollId", equalTo(vote2.getPollId()))
-                .body("[1].choice", equalTo(vote2.getChoice()))
-                .body("[1].dateCreated", equalTo(vote2.getDateCreated().toString()));
-    }
-
-    @Test
     public void getVotesByPollIdReturnsOk() {
         POLL_1.setActive(true);
         POLL_1 = pollRepository.save(POLL_1);
