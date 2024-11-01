@@ -43,10 +43,8 @@ public class VoteService {
         }
     }
 
-    public Page<Vote> getVotesByPollId(String pollId, int page, int number) throws UnkownPollException {
-        Poll poll = pollService.getPollById(pollId);
-
-        return voteRepository.findAll(Example.of(Vote.builder().pollId(poll.getId()).build()),
+    public Page<Vote> getVotesByPollId(String pollId, int page, int number) {
+        return voteRepository.findAll(Example.of(Vote.builder().pollId(pollId).build()),
                 PageRequest.of(page, number, Sort.by("dateCreated").descending()));
     }
 

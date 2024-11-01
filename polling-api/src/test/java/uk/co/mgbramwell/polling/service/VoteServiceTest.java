@@ -143,13 +143,6 @@ public class VoteServiceTest {
     }
 
     @Test
-    public void getVotesForInvalidPollThrowsException() {
-        POLL_1.setActive(false);
-        POLL_1 = pollRepository.save(POLL_1);
-        assertThrows(UnkownPollException.class, () -> voteService.getVotesByPollId("NOTAVALIDID", 0, 1));
-    }
-
-    @Test
     public void getVoteBySessionReturnsCorrectly() throws NoVoteForSessionException, UnkownPollException, UnknownOptionException, PollInactiveException {
         voteRepository.save(
                 Vote.builder().sessionId(SESSION_UUID).pollId(POLL_1.getId()).choice("Fernando Alonso").build());

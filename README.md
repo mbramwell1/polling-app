@@ -7,7 +7,8 @@ Some assumptions/compromises have been made:
 2. Creating a new Poll deactivates the current Active Poll
 3. Votes are only allowed on a Poll whilst the Poll is active
 4. A user cannot vote on the same Poll twice, or change their vote
-5. For simplicity, I am using the 'admin' database on Mongo along with the root user. This would not be advisable for a production system.
+5. A user cannot see votes for a Poll they have not voted in, unless the Poll is closed
+6. For simplicity, I am using the 'admin' database on Mongo along with the root user. This would not be advisable for a production system.
 
 Demo Polls will be loaded when the application first starts up by an ApplicationRunner
 [DemoDataLoader.java](polling-api/src/main/java/uk/co/mgbramwell/polling/demoutils/DemoDataLoader.java). This will increase startup time on first Launch. This can be disabled by setting Property

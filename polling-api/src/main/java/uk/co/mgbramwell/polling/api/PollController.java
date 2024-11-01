@@ -23,6 +23,7 @@ import uk.co.mgbramwell.polling.exception.NoActivePollException;
 import uk.co.mgbramwell.polling.exception.PollInactiveException;
 import uk.co.mgbramwell.polling.exception.UnknownOptionException;
 import uk.co.mgbramwell.polling.exception.UnkownPollException;
+import uk.co.mgbramwell.polling.exception.VoteListNotAllowedException;
 import uk.co.mgbramwell.polling.model.Poll;
 import uk.co.mgbramwell.polling.model.Vote;
 import uk.co.mgbramwell.polling.service.PollService;
@@ -125,21 +126,28 @@ public class PollController {
     /**
      * Get the Votes submitted for a Specified Poll
      *
-     * @param page   - The page to get, defaults to 0
-     * @param number - The number per page, defaults to 10
-     * @param pollId - The Poll ID
+     * @param page        - The page to get, defaults to 0
+     * @param number      - The number per page, defaults to 10
+     * @param pollId      - The Poll ID
+     * @param httpSession - HttpSession used to set Vote applied to Poll
      * @return List of Votes for the Poll
      * @throws UnkownPollException - The Provided Poll ID does not Exist
      */
     @GetMapping("/{pollId}/vote")
-    public ResponseEntity<List<Vote>> getVotesForPoll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int number, @PathVariable String pollId) throws UnkownPollException {
-        Page<Vote> foundPage = voteService.getVotesByPollId(pollId, page, number);
+    public ResponseEntity<List<Vote>> getVotesForPoll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int number, @PathVariable String pollId, HttpSession httpSession) throws UnkownPollException, VoteListNotAllowedException {
+        Map<String, String> sessionVotes = getSessionVotes(httpSession);
+        Poll poll = pollService.getPollById(pollId);
+        if (!poll.isActive() || sessionVotes.containsKey(pollId)) {
+            Page<Vote> foundPage = voteService.getVotesByPollId(pollId, page, number);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("pages", Integer.toString(foundPage.getTotalPages()));
-        headers.set("total", Long.toString(foundPage.getTotalElements()));
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("pages", Integer.toString(foundPage.getTotalPages()));
+            headers.set("total", Long.toString(foundPage.getTotalElements()));
 
-        return ResponseEntity.ok().headers(headers).body(foundPage.getContent());
+            return ResponseEntity.ok().headers(headers).body(foundPage.getContent());
+        } else {
+            throw new VoteListNotAllowedException();
+        }
     }
 
     /**

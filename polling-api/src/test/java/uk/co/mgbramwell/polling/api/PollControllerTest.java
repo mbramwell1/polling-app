@@ -3,6 +3,7 @@ package uk.co.mgbramwell.polling.api;
 import com.redis.testcontainers.RedisContainer;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import uk.co.mgbramwell.polling.data.VoteRepository;
 import uk.co.mgbramwell.polling.model.Poll;
 import uk.co.mgbramwell.polling.model.Vote;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -243,7 +245,7 @@ public class PollControllerTest {
     }
 
     @Test
-    public void getVotesByPollIdReturnsOk() {
+    public void getVotesForInactivePollReturnsOk() {
         POLL_1.setActive(true);
         POLL_1 = pollRepository.save(POLL_1);
         POLL_2 = pollRepository.save(POLL_2);
@@ -280,6 +282,44 @@ public class PollControllerTest {
     }
 
     @Test
+    public void getVotesForActivePollVotedInReturnsOk() throws IOException {
+        POLL_1.setActive(true);
+        POLL_1 = pollRepository.save(POLL_1);
+
+        Vote vote = Vote.builder()
+                .pollId(POLL_1.getId())
+                .choice("Lewis Hamilton").build();
+
+        Response response = given()
+                .contentType(ContentType.JSON)
+                .body(vote)
+                .put("/poll/" + POLL_1.getId() + "/vote")
+                .then()
+                .statusCode(200)
+                .body("id", notNullValue())
+                .body("pollId", equalTo(POLL_1.getId()))
+                .body("choice", equalTo("Lewis Hamilton"))
+                .body("dateCreated", notNullValue())
+                .extract().response();
+
+        Vote returnedVote = response.getBody().as(Vote.class);
+
+        given()
+                .when()
+                .cookie("SESSION", response.cookie("SESSION"))
+                .get("/poll/" + POLL_1.getId() + "/vote")
+                .then()
+                .statusCode(200)
+                .header("pages", equalTo("1"))
+                .header("total", equalTo("1"))
+                .body(".", hasSize(1))
+                .body("[0].id", equalTo(returnedVote.getId()))
+                .body("[0].pollId", equalTo(returnedVote.getPollId()))
+                .body("[0].choice", equalTo(returnedVote.getChoice()))
+                .body("[0].dateCreated", equalTo(returnedVote.getDateCreated().toString()));
+    }
+
+    @Test
     public void getVotesByInvalidPollIdReturnsNotFound() {
         POLL_1.setActive(true);
         POLL_1 = pollRepository.save(POLL_1);
@@ -291,6 +331,21 @@ public class PollControllerTest {
                 .statusCode(404)
                 .body("message", equalTo("No Poll found with ID NOTAVALIDID"))
                 .body("error", equalTo("Not Found"));
+    }
+
+    @Test
+    public void getVotesForActivePollNotVotedInThrowsError() {
+        POLL_1.setActive(true);
+        POLL_1 = pollRepository.save(POLL_1);
+
+        given()
+                .when()
+                .get("/poll/" + POLL_1.getId() + "/vote")
+                .then()
+                .statusCode(400)
+                .body("message",
+                        equalTo("You have not voted on this Poll. You can only see Votes for a Closed Poll or a Poll you have voted in."))
+                .body("error", equalTo("Bad Request"));
     }
 
 
