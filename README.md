@@ -38,7 +38,8 @@ bash run.sh -skipBuild
 The Docker Compose file in this directory applies to the API only. The UI will be using a standard 'ng serve'.
 
 ## Using the Application
-Open your browser and navigate to http://localhost:4200 for the UI.
+Open your browser and navigate to http://localhost:4200 for the UI. If an error is showing saying there is no Active Poll
+you may need to wait a second for the API to fully start and then refresh the page.
 To interact with the API read the [API README](polling-api/README.md).
 
 ### Placing a Vote
