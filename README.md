@@ -1,4 +1,4 @@
-# mbramwell-dizplai-test
+# mbramwell-polling-test
 
 This is the submission for the Technical Test for Martin Bramwell.
 

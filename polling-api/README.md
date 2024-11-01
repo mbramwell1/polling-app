@@ -1,4 +1,4 @@
-# mbramwell-dizplai-test API
+# mbramwell-polling-test API
 
 This is the API submission for the Technical Test for Martin Bramwell.
 The submission uses the Spring Boot framework, along with RestAssured and TestContainers for testing.
