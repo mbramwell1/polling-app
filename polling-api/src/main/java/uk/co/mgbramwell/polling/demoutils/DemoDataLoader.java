@@ -101,8 +101,7 @@ public class DemoDataLoader implements ApplicationRunner {
         List<Vote> votes = new ArrayList<>();
         for (int i = 0; i < numVotes; i++) {
             String randomVote = keys[generator.nextInt(keys.length)];
-            votes.add(Vote.builder().pollId(pollId).choice(randomVote).dateCreated(LocalDateTime.now())
-                    .sessionId(UUID.randomUUID().toString()).build());
+            votes.add(Vote.builder().pollId(pollId).choice(randomVote).sessionId(UUID.randomUUID().toString()).build());
         }
         return votes;
     }

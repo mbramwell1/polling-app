@@ -41,7 +41,11 @@ JavaDocs are available in
 
 Demo Polls will be loaded when the application first starts up by an ApplicationRunner
 [DemoDataLoader.java](src/main/java/uk/co/mgbramwell/polling/demoutils/DemoDataLoader.java). This will increase startup time on first Launch. This can be disabled by setting Property
-value `demo.loadData=false`.
+value `demo.loadData=false`. 
+
+It is worth noting that due to using Auditing on the MongoDB Repository, the createdDate attribute
+will most likely be the same for all randomly generated Votes due to the speed at which they are inserted into the database,
+which may look strange in the UI.
 
 Swagger is also included by default and once the Dev Mode Application is running, visit:
 [localhost:8080/swagger-ui/index.html](localhost:8080/swagger-ui/index.html). This will give you a graphical, interactive way to use
