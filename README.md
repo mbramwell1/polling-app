@@ -10,7 +10,7 @@ Some assumptions/compromises have been made:
 5. For simplicity, I am using the 'admin' database on Mongo along with the root user. This would not be advisable for a production system.
 
 Demo Polls will be loaded when the application first starts up by an ApplicationRunner
-[DemoDataLoader.java](polling-api/src/main/java/uk/co/mgbramwell/polling/api/DemoDataLoader.java). This will increase startup time on first Launch. This can be disabled by setting Property
+[DemoDataLoader.java](polling-api/src/main/java/uk/co/mgbramwell/polling/demoutils/DemoDataLoader.java). This will increase startup time on first Launch. This can be disabled by setting Property
 value `demo.loadData=false`.
 
 ## Structure
