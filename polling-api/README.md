@@ -40,7 +40,7 @@ JavaDocs are available in
 [WebSocketController.java](src/main/java/uk/co/mgbramwell/polling/api/websocket/WebSocketController.java).
 
 Demo Polls will be loaded when the application first starts up by an ApplicationRunner
-[DemoDataLoader.java](src/main/java/uk/co/mgbramwell/polling/api/DemoDataLoader.java). This will increase startup time on first Launch. This can be disabled by setting Property
+[DemoDataLoader.java](src/main/java/uk/co/mgbramwell/polling/demoutils/DemoDataLoader.java). This will increase startup time on first Launch. This can be disabled by setting Property
 value `demo.loadData=false`.
 
 Swagger is also included by default and once the Dev Mode Application is running, visit:
