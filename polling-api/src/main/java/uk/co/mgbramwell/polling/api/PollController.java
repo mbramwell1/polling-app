@@ -139,6 +139,7 @@ public class PollController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("pages", Integer.toString(foundPage.getTotalPages()));
+        headers.set("total", Long.toString(foundPage.getTotalElements()));
 
         return ResponseEntity.ok().headers(headers).body(foundPage.getContent());
     }
