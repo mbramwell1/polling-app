@@ -22,8 +22,8 @@
   <div *ngIf="votes === null && errorMessage === null">
     <mat-spinner class="loading-spinner"></mat-spinner>
   </div>
-  <div class="details-component error-container" *ngIf="errorMessage !== null">
-    <div>
+  <div class="error-container" *ngIf="errorMessage !== null">
+    <div class="error">
       {{ errorMessage }}
     </div>
   </div>
