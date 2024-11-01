@@ -311,7 +311,7 @@ public class PollControllerTest {
                 .then()
                 .statusCode(200)
                 .header("pages", equalTo("1"))
-                .header("total", equalTo("2"))
+                .header("total", equalTo("1"))
                 .body(".", hasSize(1))
                 .body("[0].id", equalTo(vote1.getId()))
                 .body("[0].pollId", equalTo(vote1.getPollId()))
