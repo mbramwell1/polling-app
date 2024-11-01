@@ -1,4 +1,6 @@
 FROM openjdk:21-jdk
+RUN groupadd spring && useradd spring -g spring
+USER spring:spring
 ARG DEPENDENCY=target/dependency
 COPY ${DEPENDENCY}/BOOT-INF/lib /app/lib
 COPY ${DEPENDENCY}/META-INF /app/META-INF
