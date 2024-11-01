@@ -26,6 +26,11 @@ that will build API and start it in Docker, along with starting up the Angular U
 bash run.sh
 ```
 
+If you have built the project once, and not changed anything, you can skip the API build stage using:
+```shell script
+bash run.sh -skipBuild
+```
+
 The Docker Compose file in this directory applies to the API only. The UI will be using a standard 'ng serve'.
 
 ## Using the Application
@@ -60,8 +65,8 @@ has lots of votes.
 ![screenshot](screenshots/votes-for-poll.png)
 
 ## Cleaning Up
-'ng serve' will be attached whilst running the UI. Use CTRL + C to exit.
-Finally:
+'ng serve' will be attached whilst running the UI. Use `CTRL + C` to exit. This will also kill the running docker containers.
+In the event that this fails, simply run:
 ```shell script
 docker compose down
 ```
