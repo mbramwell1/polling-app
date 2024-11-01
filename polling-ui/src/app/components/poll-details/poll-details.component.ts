@@ -1,47 +1,92 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { PollService } from '../../service/poll.service';
 import { WebsocketService } from '../../service/websocket.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Poll } from '../../model/poll';
 import { WebSocketMessage } from '../../model/websocket-message';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-poll-details',
   templateUrl: './poll-details.component.html',
-  styleUrl: './poll-details.component.scss'
+  styleUrl: './poll-details.component.scss',
 })
 export class PollDetailsComponent {
+  private _snackBar = inject(MatSnackBar);
+
   @Input() poll = {} as Poll;
   routePollId: string | null = null;
 
   options: string[] = [];
 
-  constructor(private route: ActivatedRoute, private pollService: PollService, private websocketService: WebsocketService) {
+  errorMessage: string | null = null;
+
+  constructor(
+    private route: ActivatedRoute,
+    private pollService: PollService,
+    private websocketService: WebsocketService,
+  ) {
     this.routePollId = this.route.snapshot.paramMap.get('id');
     if (this.routePollId) {
-      this.pollService.getPollById(this.routePollId).subscribe(poll => this.setPoll(poll));
+      this.pollService.getPollById(this.routePollId).subscribe({
+        next: (response) => this.setPoll(response.body!),
+        error: (error) => {
+          if (error.status === 404) {
+            this.errorMessage = 'Poll Not Found';
+          } else {
+            this.errorMessage =
+              'An Error has Occurred. Please try again later.';
+          }
+        },
+      });
     } else {
-      this.pollService.getActivePoll().subscribe(poll => this.setPoll(poll));
+      this.pollService.getActivePoll().subscribe({
+        next: (response) => this.setPoll(response.body!),
+        error: (error) => {
+          if (error.status === 404) {
+            this.errorMessage =
+              "We don't have an Active Poll right now. Please try again later.";
+          } else {
+            this.errorMessage =
+              'An Error has Occurred. Please try again later.';
+          }
+        },
+      });
     }
-  };
+  }
 
   ngOnInit(): void {
-    this.websocketService.messageReceived.subscribe((websocketMessage: WebSocketMessage) => {
-      if (websocketMessage.message === 'newvote' && this.poll.active) {
-        let votes: number | undefined = this.poll.options.get(websocketMessage.choice);
+    this.websocketService.messageReceived.subscribe(
+      (websocketMessage: WebSocketMessage) => {
+        if (websocketMessage.message === 'newvote' && this.poll.active) {
+          let votes: number | undefined = this.poll.options.get(
+            websocketMessage.choice,
+          );
 
-        let newVotes;
-        if (votes !== undefined) {
-          newVotes = votes + 1;
-          this.poll.options.set(websocketMessage.choice, newVotes);
-        } else {
-          console.log("Invalid Vote received for Poll - " + JSON.stringify(websocketMessage));
+          let newVotes;
+          if (votes !== undefined) {
+            newVotes = votes + 1;
+            this.poll.options.set(websocketMessage.choice, newVotes);
+          } else {
+            console.log(
+              'Invalid Vote received for Poll - ' +
+                JSON.stringify(websocketMessage),
+            );
+          }
+        } else if (websocketMessage.message === 'newpoll' && this.poll.active) {
+          this.poll.active = false;
+          this.websocketService.closeConnection();
         }
-      } else if (websocketMessage.message === 'newpoll' && this.poll.active) {
-        this.poll.active = false;
-        this.websocketService.closeConnection();
-      }
-    });
+      },
+    );
   }
 
   private setPoll(poll: Poll): void {
@@ -54,8 +99,17 @@ export class PollDetailsComponent {
 
   public vote(choice: string): void {
     if (this.poll.votePlaced === null && this.poll.active) {
-      this.pollService.vote(this.poll.id, choice).subscribe(poll => {
-        this.poll.votePlaced = choice;
+      this.pollService.vote(this.poll.id, choice).subscribe({
+        next: (response) => {
+          this.poll.votePlaced = response.body!.choice;
+        },
+        error: () => {
+          this.poll.votePlaced = null;
+          this._snackBar.open(
+            "We couldn't save your Vote. Please try again Later.",
+            'Ok',
+          );
+        },
       });
     }
   }
@@ -75,6 +129,6 @@ export class PollDetailsComponent {
   }
 
   public loadLatestPoll(): void {
-    window.location.href = "/";
+    window.location.href = '/';
   }
 }

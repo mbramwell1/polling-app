@@ -66,7 +66,7 @@ public class DemoDataLoader implements ApplicationRunner {
         if (loadData && pollRepository.findAll().isEmpty()) {
             createNewPoll("Who's the best NFL Team?", false, OPTION_SET_1);
             Thread.sleep(1000);
-            createNewPoll("Who's going to Win the Premier League?", false, OPTION_SET_2);
+            createNewPoll("Who's going to win the Premier League?", false, OPTION_SET_2);
             Thread.sleep(1000);
             createNewPoll("What is the best F1 Track?", false, OPTION_SET_3);
             Thread.sleep(1000);

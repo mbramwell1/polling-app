@@ -8,27 +8,27 @@ const routes: Routes = [
     path: 'poll',
     children: [
       {
-        path: ":id/votes",
-        component: PollVotesComponent
+        path: ':id/votes',
+        component: PollVotesComponent,
       },
       {
         path: ':id',
         component: PollDetailsComponent,
-      }
-    ]
+      },
+    ],
   },
   {
     path: 'votes',
-    component: PollVotesComponent
+    component: PollVotesComponent,
   },
   {
     path: '',
     component: PollDetailsComponent,
-  }
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

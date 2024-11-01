@@ -1,47 +1,66 @@
 <div class="details-container">
-    <div *ngIf="poll.id !== undefined">
-        <div class="details-component title-container">
-            {{poll.name}}
-        </div>
-        <div>
-            <div class="details-component  subtitle-container">
-                <span class="votes-count-container">
-                    {{poll.getVotesSum()}} Votes -
-                </span>
-
-                <span *ngIf="poll.votePlaced === null">
-                    <span class="text-container" *ngIf="poll.active">
-                        Cast your vote now!
-                    </span>
-                    <span class="text-container" *ngIf="!poll.active">
-                        This Poll has now Closed.
-                    </span>
-                </span>
-
-                <span *ngIf="poll.votePlaced !== null">
-                    <span class="text-container" *ngIf="poll.active">
-                        Thanks for your Response.
-                    </span>
-                    <span class="text-container" *ngIf="!poll.active">
-                        Thanks for your Response, this Poll has now Closed.
-                    </span>
-                </span>
-
-                <div *ngIf="!poll.active">
-                    <button class="reload-button" mat-stroked-button (click)="loadLatestPoll()">See the Latest
-                        Poll</button>
-                </div>
-            </div>
-
-            <app-result-bar *ngFor="let option of options" [option]="option" [pollActive]="poll.active"
-                [votePlaced]="poll.votePlaced" [votePercentage]="calculatePercentage(option)"
-                (voteClicked)="vote($event)"></app-result-bar>
-
-            <a class="votes-link" *ngIf="poll.votePlaced !== null || !poll.active" [routerLink]="getVotesLink()">See All
-                Votes</a>
-        </div>
+  <div *ngIf="poll.id !== undefined && errorMessage === null">
+    <div class="details-component title-container">
+      {{ poll.name }}
     </div>
-    <div *ngIf="poll.id === undefined">
-        <mat-spinner class="loading-spinner"></mat-spinner>
+    <div>
+      <div class="details-component subtitle-container">
+        <span class="votes-count-container">
+          {{ poll.getVotesSum() }} Votes -
+        </span>
+
+        <span *ngIf="poll.votePlaced === null">
+          <span class="text-container" *ngIf="poll.active">
+            Cast your vote now!
+          </span>
+          <span class="text-container" *ngIf="!poll.active">
+            This Poll has now Closed.
+          </span>
+        </span>
+
+        <span *ngIf="poll.votePlaced !== null">
+          <span class="text-container" *ngIf="poll.active">
+            Thanks for your Response.
+          </span>
+          <span class="text-container" *ngIf="!poll.active">
+            Thanks for your Response, this Poll has now Closed.
+          </span>
+        </span>
+
+        <div *ngIf="!poll.active">
+          <button
+            class="reload-button"
+            mat-stroked-button
+            (click)="loadLatestPoll()"
+          >
+            See the Latest Poll
+          </button>
+        </div>
+      </div>
+
+      <app-result-bar
+        *ngFor="let option of options"
+        [option]="option"
+        [pollActive]="poll.active"
+        [votePlaced]="poll.votePlaced"
+        [votePercentage]="calculatePercentage(option)"
+        (voteClicked)="vote($event)"
+      ></app-result-bar>
+
+      <a
+        class="votes-link"
+        *ngIf="poll.votePlaced !== null || !poll.active"
+        [routerLink]="getVotesLink()"
+        >See All Votes</a
+      >
     </div>
+  </div>
+  <div *ngIf="poll.id === undefined && errorMessage === null">
+    <mat-spinner class="loading-spinner"></mat-spinner>
+  </div>
+  <div class="details-component error-container" *ngIf="errorMessage !== null">
+    <div>
+      {{ errorMessage }}
+    </div>
+  </div>
 </div>

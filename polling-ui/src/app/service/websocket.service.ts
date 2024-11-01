@@ -5,20 +5,22 @@ import { Client } from '@stomp/stompjs';
 import { WebSocketMessage } from '../model/websocket-message';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class WebsocketService {
   private client: Client | undefined;
   messageReceived: Subject<WebSocketMessage> = new Subject<WebSocketMessage>();
 
-  constructor() { }
+  constructor() {}
 
   connect(): void {
     this.client = new Client({
       brokerURL: environment.pollApi.url + '/ws',
       onConnect: () => {
-        this.client!.subscribe('/topic/votes', message => {
-          let websocketMessage = new WebSocketMessage(JSON.parse(message.body) as WebSocketMessage);
+        this.client!.subscribe('/topic/votes', (message) => {
+          let websocketMessage = new WebSocketMessage(
+            JSON.parse(message.body) as WebSocketMessage,
+          );
           this.messageReceived.next(websocketMessage);
         });
       },

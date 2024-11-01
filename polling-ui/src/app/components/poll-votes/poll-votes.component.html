@@ -1,9 +1,30 @@
-<div class="votes-container">
+<div class="votes-parent-container">
+  <div class="votes-container" *ngIf="votes !== null && errorMessage === null">
     <div class="controls-container">
-        <a (click)="previousPage()" class="link back" [ngClass]="{'disabled': currentVotesPageNumber === 0}">Previous Page</a>
-        <a class="link" [routerLink]="getBackLink()">Back</a>
-        <a (click)="nextPage()" class="link next" [ngClass]="{'disabled': currentVotesPageNumber === totalPages-1}">NextPage</a>
+      <a class="link" [routerLink]="getBackLink()">Back</a>
+      <mat-paginator
+        class="paginator"
+        (page)="handlePageEvent($event)"
+        [length]="totalElements"
+        [pageSize]="votesPageSize"
+        [hidePageSize]="true"
+        aria-label="Select page"
+      >
+      </mat-paginator>
     </div>
-    <app-box class="vote" *ngFor="let vote of votes" [line1]="vote.choice"
-        [line2]="vote.dateCreated | date: 'dd/MM/yyyy HH:mm:ss'"></app-box>
+    <app-box
+      class="vote"
+      *ngFor="let vote of votes"
+      [line1]="vote.choice"
+      [line2]="vote.dateCreated | date: 'dd/MM/yyyy HH:mm:ss'"
+    ></app-box>
+  </div>
+  <div *ngIf="votes === null && errorMessage === null">
+    <mat-spinner class="loading-spinner"></mat-spinner>
+  </div>
+  <div class="details-component error-container" *ngIf="errorMessage !== null">
+    <div>
+      {{ errorMessage }}
+    </div>
+  </div>
 </div>

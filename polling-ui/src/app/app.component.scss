@@ -1,68 +1,55 @@
 .container {
-    background: #07072a url(../assets/hero.webp) no-repeat center center scroll;
-    height: 100%;
+  background: #07072a url(../assets/hero.webp) no-repeat center center scroll;
+  height: 100%;
 
-    .sidenav {
+  .sidenav {
+    background-color: #07072a;
+
+    .controls-container {
+      display: flex;
+      flex-direction: row;
+
+      .paginator {
+        width: 100%;
+        color: white;
         background-color: #07072a;
-
-        .controls-container {
-            display: flex;
-            flex-direction: row;
-            padding: 1em;
-
-            a {
-                color: white;
-                cursor: pointer;
-            }
-
-            .nextPage {
-                margin-left: auto;
-            }
-
-            .previousPage {
-                margin-right: auto;
-            }
-
-            .disabled {
-                color: rgb(87, 87, 87);
-                pointer-events: none;
-            }
-        }
-
-        .poll-container {
-            display: flex;
-            flex-direction: column;
-            padding-left: 1.5em;
-            padding-right: 1.5em;
-            padding-bottom: 1.5em;
-
-            .poll {
-                margin-bottom: .5em;
-                cursor: pointer;
-            }
-
-            .poll:hover {
-                background-color: rgba(167, 167, 167, 0.3);
-            }
-        }
+      }
     }
 
-    .top-bar {
-        .logo-container {
-            max-width: 11em;
-            min-width: 11em;
-            margin: 0 auto 2em auto;
-            padding-top: 2em;
-        }
+    .poll-container {
+      display: flex;
+      flex-direction: column;
+      padding-left: 1.5em;
+      padding-right: 1.5em;
+      padding-bottom: 1.5em;
 
-        .open-button {
-            top: 0;
-            position: absolute;
-            right: 0;
-            margin-top: .5em;
-            margin-right: .5em;
-            color: white;
-            border-color: white;
-        }
+      .poll {
+        margin-bottom: 0.5em;
+        cursor: pointer;
+      }
+
+      .poll:hover {
+        background-color: rgba(167, 167, 167, 0.3);
+      }
     }
+  }
+
+  .top-bar {
+    .logo-container {
+      max-width: 11em;
+      min-width: 11em;
+      margin: 0 auto 2em auto;
+      padding-top: 2em;
+    }
+
+    .open-button {
+      top: 0;
+      position: absolute;
+      right: 0;
+      margin-top: 0.5em;
+      margin-right: 0.5em;
+      color: white;
+      border-color: white;
+    }
+  }
 }

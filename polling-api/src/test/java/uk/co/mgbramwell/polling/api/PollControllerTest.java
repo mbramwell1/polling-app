@@ -148,6 +148,7 @@ public class PollControllerTest {
                 .then()
                 .statusCode(200)
                 .header("pages", equalTo("2"))
+                .header("total", equalTo("2"))
                 .body(".", hasSize(1))
                 .body("[0].id", equalTo(savedPoll1.getId()))
                 .body("[0].name", equalTo("Who's the Best Formula 1 Driver?"))

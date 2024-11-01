@@ -23,7 +23,7 @@ public class Application {
                         .allowCredentials(true)
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
                         .allowedHeaders("*")
-                        .exposedHeaders("pages")
+                        .exposedHeaders("pages", "total")
                         .maxAge(3600);
             }
         };

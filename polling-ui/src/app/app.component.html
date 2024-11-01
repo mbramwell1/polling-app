@@ -1,16 +1,32 @@
 <mat-sidenav-container class="container">
-  <mat-sidenav #sidenav class="sidenav" position="end" mode="side" [(opened)]="opened">
+  <mat-sidenav
+    #sidenav
+    class="sidenav"
+    position="end"
+    mode="side"
+    [(opened)]="sideNavOpen"
+  >
     <div class="controls-container">
-      <a (click)="previousPage()" class="previousPage" [ngClass]="{'disabled': currentPastPollPage === 0}">Previous
-        Page</a>
-      <a (click)="nextPage()" class="nextPage" [ngClass]="{'disabled': currentPastPollPage === totalPages-1}">Next
-        Page</a>
+      <mat-paginator
+        class="paginator"
+        (page)="handlePageEvent($event)"
+        [length]="totalElements"
+        [pageSize]="pastPollPageSize"
+        [hidePageSize]="true"
+        aria-label="Select page"
+      >
+      </mat-paginator>
     </div>
     <div class="poll-container">
-      <app-box *ngFor="let poll of pastPolls" class="poll" [line1]="poll.name" 
-      [line2]="poll.getVotesSum() + ' Votes'"
-      [line3]="getVollPlaced(poll.votePlaced)"
-        [selected]="poll.active" (click)="loadPoll(poll)"></app-box>
+      <app-box
+        *ngFor="let poll of pastPolls"
+        class="poll"
+        [line1]="poll.name"
+        [line2]="poll.getVotesSum() + ' Votes'"
+        [line3]="getVotePlaced(poll.votePlaced)"
+        [selected]="poll.active"
+        (click)="loadPoll(poll)"
+      ></app-box>
     </div>
   </mat-sidenav>
   <section>
@@ -18,8 +34,9 @@
       <div class="logo-container">
         <img src="./assets/logo.svg" />
       </div>
-      <button class="reload-button" mat-stroked-button (click)="toggleSideNav()">{{opened ? 'Close' :
-        'Polls'}}</button>
+      <button class="open-button" mat-stroked-button (click)="toggleSideNav()">
+        {{ sideNavOpen ? "Close" : "Polls" }}
+      </button>
     </div>
     <router-outlet></router-outlet>
   </section>

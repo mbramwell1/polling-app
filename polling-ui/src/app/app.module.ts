@@ -12,10 +12,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { PollService } from './service/poll.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { ResultBarComponent } from './components/result-bar/result-bar.component';
 import { PollVotesComponent } from './components/poll-votes/poll-votes.component';
 import { BoxComponent } from './components/box/box.component';
-
 
 @NgModule({
   declarations: [
@@ -23,20 +23,17 @@ import { BoxComponent } from './components/box/box.component';
     PollDetailsComponent,
     PollVotesComponent,
     ResultBarComponent,
-    BoxComponent
+    BoxComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     MatButtonModule,
     MatProgressSpinnerModule,
-    MatSidenavModule
+    MatSidenavModule,
+    MatPaginatorModule,
   ],
-  providers: [
-    provideHttpClient(), 
-    provideAnimationsAsync(), 
-    PollService
-  ],
-  bootstrap: [AppComponent]
+  providers: [provideHttpClient(), provideAnimationsAsync(), PollService],
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}
