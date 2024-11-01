@@ -71,7 +71,7 @@ For future work, error handling within the UI could be improved to provide more
 detailed error messages.
 
 Work will also need to done around deployments, my suggestion would be to use Terraform
-to deploy into a cloud provider e.g. AWS, using services including S3, CloudFront, EKS and DynamoDB.
+to deploy into a cloud provider e.g. AWS, using services including S3 static web hosting, CloudFront and Route53 for the UI, EKS, DynamoDB and ElastiCache for the API.
 
 Ideally things like Fonts and Libraries should be managed on a private CDN for the UI to avoid security impacts caused by
 situations like the Polyfill vulnerability found by Sansec in June 2024.
